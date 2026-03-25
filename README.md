@@ -1,4 +1,4 @@
-#SIKANOUMI | Applied AI Engineer
+# SIKANOUMI | Applied AI Engineer
 
 生成AIを**使える価値**に変えるために、**Agent / RAG / Memory / Evaluation** を軸とした実験基盤と、  
 それを**伝わるUIとプロダクト体験に落とす実装**に取り組んでいます。
