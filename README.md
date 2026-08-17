@@ -1,85 +1,181 @@
 # SIKANOUMI | Applied AI / LLM Engineer
 
-生成AIを「使える機能」に落とし込むために、**LLM Evaluation / LoRA Tuning / Agent / RAG / Memory** を軸にした実験と実装に取り組んでいます。
+生成AIを「使える機能」に落とし込むために、  
+**LLM Evaluation / RAG / Fine-tuning / Agent / Product Engineering** を軸に実験と実装を行っています。
 
-個人開発では、LLMをただAPIで呼び出すだけではなく、
-**dataset design / baseline evaluation / fine-tuning / before-after comparison / error analysis** まで含めた再現可能な検証環境を作っています。
+LLMをAPIで呼び出すだけではなく、
 
-プロダクト寄りでは、**認証・UI・API・AI機能・デプロイ** まで含めて、
-実運用を見据えたWebアプリケーションの設計と実装を行っています。
+**dataset design → baseline → retrieval / fine-tuning → evaluation → error analysis**
+
+まで含めて、結果を比較・検証できる環境を作ることを重視しています。
+
+また、AI機能単体だけでなく、**認証・UI・API・AI・デプロイ**まで含めたWebアプリケーション実装にも取り組んでいます。
 
 ---
 
-## 🔥 Featured Projects
+# 🔥 Featured Projects
 
-### ✅ japanese-llm-tuning-lab — Japanese LLM evaluation & LoRA tuning
+## ✅ Closed-World LLM Benchmark
+### Base vs RAG vs QLoRA vs RAG + QLoRA
 
-日本語の会議メモ・業務メモから、決まったJSON形式で **要約 / 決定事項 / ToDo / リスク** を抽出するための、LLM評価・LoRAチューニング実験リポジトリです。
+未公開のオリジナル架空世界を使い、  
+**Base / RAG / QLoRA / Hybrid** を同一条件で比較したLLM評価プロジェクトです。
 
-`Qwen/Qwen2.5-0.5B-Instruct` を使い、baseline推論、LoRA fine-tuning、before / after比較、error analysisを行いました。
+40問 × 4条件 = **160回答をblind human evaluation**し、  
+Fact / Reasoning / Unknown / World Boundary に加えて、
 
-* Repo: https://github.com/sikanoumi/japanese-llm-tuning-lab
-* Highlights: local LLM / LoRA / dataset design / JSON schema evaluation / error analysis
-* Result:
+- Unsupported Claim
+- Hallucination
+- Outside-world Leakage
+- Latency
 
-  * `schema_valid_rate`: `0.1250 → 0.8750`
-  * `todo_owner_accuracy`: `0.0000 → 0.6875`
-  * `todo_due_accuracy`: `0.0000 → 0.8125`
-  * `hallucination_flag_rate`: `0.8750 → 0.1250`
+を独立して評価しました。
 
-### ✅ NeuroLikeLab — persona router × memory × eval
+* Repo: https://github.com/sikanoumi/closed-world-llm-benchmark
+* Model: `Qwen/Qwen3.5-9B`
+* Embedding: `Qwen/Qwen3-Embedding-0.6B`
+* Reranker: `Qwen/Qwen3-Reranker-0.6B`
+* Highlights: RAG / QLoRA / PEFT / FAISS / Reranker / Blind Evaluation / Reproducible Benchmark
 
-LLMの応答スタイルを **persona = policy** として扱い、Router（state × task）で切り替えながら、
-MemGPT型メモリと AgeMem gate を組み合わせて **再現可能な評価** を行う実験基盤です。
+### Result
 
-* Repo: https://github.com/sikanoumi/NeuroLikeLab
-* Release: `v0.3-router1`
-* Highlights: router / memory / evaluation / UI demo / metrics snapshot
+| Condition | Fact | Reasoning | Hallucination |
+|---|---:|---:|---:|
+| Base | 0.042 | 0.000 | 10.0% |
+| RAG | 0.833 | 0.600 | 52.5% |
+| QLoRA | 0.042 | 0.000 | 17.5% |
+| Hybrid | **0.875** | **0.700** | 40.0% |
 
-### ✅ TalkSeed — AI-assisted 1on1 support app
+今回の条件では、QLoRA単体によるClosed-World QA性能の改善は確認できず、  
+**RetrievalがFact / Reasoning性能に大きく寄与**しました。
 
-1on1 ミーティングを支援するための Web アプリケーションです。
-Next.js / FastAPI / Entra ID を用いて、相手選択、AI話題提案、メモ管理、PDF出力まで含む体験を実装しました。
+一方でRAGによって回答可能性が高まるとUnsupported Claim / Hallucinationも増えることが分かり、  
+**CorrectnessとGroundingを分離して評価する必要性**も確認しました。
+
+---
+
+## ✅ TalkSeed — AI-assisted 1on1 support app
+
+1on1ミーティングを支援するためのWebアプリケーションです。
+
+**Next.js / FastAPI / Microsoft Entra ID / Azure** を用いて、  
+認証、相手選択、AI話題提案、メモ管理、PDF出力などを実装しました。
+
+AI機能だけではなく、**認証・Frontend・Backend API・Cloud Deploymentまで含めたProduct Engineering**を行っています。
 
 * UI Repo: https://github.com/sikanoumi/talkseed-ui
 * API Repo: https://github.com/sikanoumi/talkseed-api
-* Highlights: Next.js / FastAPI / Entra ID / Azure App Service / AI topic suggestions / PDF export
+* Highlights: Next.js / TypeScript / FastAPI / Entra ID / Azure / AI Integration / PDF Export
 
-### ✅ Inner Palette — non-judgmental color flow interface
+---
 
-自由記述をラベルやスコアではなく、**個人固有の色の流れ**として返す非裁定インターフェースです。
-Next.js / FastAPI / SQLite で、入力・分析・履歴表示まで含む MVP を実装しました。
+## ✅ japanese-llm-tuning-lab
+### Japanese LLM Evaluation & LoRA Tuning
+
+日本語の会議メモ・業務メモから、決まったJSON形式で  
+**要約 / 決定事項 / ToDo / リスク** を抽出するためのLLM評価・LoRAチューニング実験です。
+
+`Qwen/Qwen2.5-0.5B-Instruct` を使用し、
+
+**baseline evaluation → dataset design → LoRA fine-tuning → before/after comparison → error analysis**
+
+まで実施しました。
+
+* Repo: https://github.com/sikanoumi/japanese-llm-tuning-lab
+* Highlights: Local LLM / LoRA / PEFT / Dataset Design / Structured Output Evaluation
+
+### Result
+
+| Metric | Before | After |
+|---|---:|---:|
+| schema_valid_rate | 0.1250 | **0.8750** |
+| todo_owner_accuracy | 0.0000 | **0.6875** |
+| todo_due_accuracy | 0.0000 | **0.8125** |
+| hallucination_flag_rate | 0.8750 | **0.1250** |
+
+---
+
+# 🧪 Other Projects
+
+## NeuroLikeLab — persona router × memory × eval
+
+LLMの応答スタイルを **persona = policy** として扱い、  
+Router（state × task）で切り替えながら、MemoryとEvaluationを組み合わせる実験基盤です。
+
+* Repo: https://github.com/sikanoumi/NeuroLikeLab
+* Release: `v0.3-router1`
+* Highlights: Router / Memory / Evaluation / Metrics / UI Demo
+
+---
+
+## Inner Palette — non-judgmental color flow interface
+
+自由記述をラベルやスコアではなく、  
+**個人固有の色の流れ**として返す非裁定インターフェースです。
+
+Next.js / FastAPI / SQLiteで、入力・分析・履歴表示まで含むMVPを実装しました。
 
 * Repo: https://github.com/sikanoumi/inner-palette
-* Highlights: AI × UI / personalized palette / history / quiet interface
+* Highlights: AI × UI / Personalized Palette / History / Interaction Design
 
 ---
 
-## 🧰 Stack
+# 🧰 Stack
 
-* **Backend**: Python / FastAPI
-* **Frontend**: Next.js / TypeScript / UI prototyping
-* **Auth**: NextAuth / Microsoft Entra ID
-* **LLM**: OpenAI API / local LLM / Hugging Face Transformers
-* **Fine-tuning**: LoRA / QLoRA / PEFT
-* **RAG**: FAISS / Vector Search
-* **Memory**: Redis / structured memory design
-* **Evaluation**: JSONL metrics / schema validation / reproducible benches / error analysis
-* **Infra / Tools**: Azure / Azure App Service / GitHub / SQLite / VS Code
+### LLM / Applied AI
+
+- OpenAI API / Azure OpenAI
+- Hugging Face Transformers
+- Qwen
+- LoRA / QLoRA / PEFT
+- RAG / FAISS / Vector Search
+- Embedding / Reranker
+- Agent / Router / Memory
+- LLM Evaluation / Error Analysis
+
+### Backend
+
+- Python
+- FastAPI
+- Pydantic
+- SQLite
+- Redis
+
+### Frontend
+
+- Next.js
+- TypeScript
+- React
+
+### Auth / Cloud
+
+- NextAuth
+- Microsoft Entra ID
+- Microsoft Graph
+- Azure
+- Azure App Service
+
+### Development
+
+- Git / GitHub
+- VS Code
+- Claude Code
+- JSONL-based evaluation pipelines
 
 ---
 
-## 🎯 Focus
+# 🎯 Focus
 
-* Applied AI / LLM feature implementation
-* LLM evaluation and structured output improvement
-* LoRA / QLoRA fine-tuning experiments
-* Agent / RAG / Memory design
-* Evaluation-first development
-* Turning AI systems into usable product experiences
+- Applied AI / LLM Engineering
+- RAG / Retrieval / Reranking
+- LLM Evaluation & Grounding
+- LoRA / QLoRA Fine-tuning
+- Agent / Memory Design
+- AI × Backend / Product Engineering
+- Evaluation-first Development
 
 ---
 
-## 📫 Contact
+# 📫 Contact
 
 * GitHub: https://github.com/sikanoumi
